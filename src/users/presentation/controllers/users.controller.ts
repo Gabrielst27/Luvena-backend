@@ -1,48 +1,31 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Inject,
-} from '@nestjs/common';
-import { CreateUserDto } from '../dtos/create-user.dto';
-import { IListUsersService } from '@/users/application/use-cases/list-users/list-users.service.interface';
-import { ICreateUserService } from '@/users/application/use-cases/create-user/create-user.service.interface';
+import { Controller, Get, Post, Body, Param, Inject, Logger } from '@nestjs/common';
+import { SignUpDto } from '../../application/dtos/sign-up.dto';
+import { IListEmployeesByCompanyId } from '@/users/application/use-cases/list-employees-by-company-id/list-employees-by-company-id.interface';
+import { ISignUp } from '@/users/application/use-cases/sign-up/sign-up.interface';
+import { ListEmployeesDto } from '@/users/application/dtos/list-employees.dto';
 
 @Controller('users')
 export class UsersController {
+  public logger: Logger;
+
   constructor(
-    @Inject('IListUsersService')
-    private readonly listUsersService: IListUsersService,
-    @Inject('ICreateUserService')
-    private readonly createUserService: ICreateUserService,
-  ) {}
-
-  @Post('create-user')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.createUserService.execute(createUserDto);
+    @Inject('IListEmployeesByCompanyId')
+    private readonly listEmployeesByCompanyIdService: IListEmployeesByCompanyId,
+    @Inject('ISignUp')
+    private readonly signUpService: ISignUp,
+  ) {
+    this.logger = new Logger();
   }
 
-  @Get()
-  public async listAllUsers() {
-    return await this.listUsersService.execute();
+  @Get('all-by-company-id/:id')
+  public async listEmployeesByCompanyId(@Param() id: string): Promise<ListEmployeesDto[]> {
+    this.logger.debug('GET: all-by-company-id/:id');
+    return await this.listEmployeesByCompanyIdService.execute(id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.usersService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Post('sign-up')
+  signUp(@Body() signUpDto: SignUpDto) {
+    this.logger.debug('POST: sign-up');
+    return this.signUpService.execute(signUpDto);
+  }
 }

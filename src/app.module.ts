@@ -3,7 +3,7 @@ import { EnvConfigModule } from './shared/infrastructure/env-config/env-config.m
 import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [EnvConfigModule, UsersModule],
+  imports: [EnvConfigModule.forRoot(), UsersModule],
   controllers: [],
   providers: [],
 })

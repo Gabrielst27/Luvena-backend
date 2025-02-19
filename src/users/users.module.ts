@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './presentation/controllers/users.controller';
-import { ListUsersService } from './application/use-cases/list-users/list-users.service';
+import { ListEmployeesByCompanyIdService } from './application/use-cases/list-employees-by-company-id/list-employees-by-company-id.service';
 import { UsersRepository } from './infrastructure/repositories/users.repository';
-import { CreateUserService } from './application/use-cases/create-user/create-user.service';
+import { SignUpService } from './application/use-cases/sign-up/sign-up.service';
+import { UserAuthService } from './infrastructure/user-authentication/user.auth.service';
 
 @Module({
   controllers: [UsersController],
@@ -12,12 +13,16 @@ import { CreateUserService } from './application/use-cases/create-user/create-us
       useClass: UsersRepository,
     },
     {
-      provide: 'IListUsersService',
-      useClass: ListUsersService,
+      provide: 'IListEmployeesByCompanyId',
+      useClass: ListEmployeesByCompanyIdService,
     },
     {
-      provide: 'ICreateUserService',
-      useClass: CreateUserService,
+      provide: 'ISignUp',
+      useClass: SignUpService,
+    },
+    {
+      provide: 'IUserAuth',
+      useClass: UserAuthService,
     },
   ],
 })

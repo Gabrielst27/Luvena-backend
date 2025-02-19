@@ -1,31 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntity, UserProps } from '@/users/domain/entities/user.entity';
 import { IUsersRepository } from '../../domain/interfaces/users.repository.interface';
-import { getFirestore } from 'firebase-admin/firestore';
-import { CreateUserDto } from '@/users/presentation/dtos/create-user.dto';
+import { Firestore, getFirestore } from 'firebase-admin/firestore';
 
 @Injectable()
 export class UsersRepository implements IUsersRepository {
-  constructor() {}
-  public async createUser(user: CreateUserDto): Promise<void> {
-    const userProps: UserProps = {
-      name: user.name,
-      email: user.email,
-      password: user.password,
-      phone: user.phone,
-      createdAt: new Date(),
-    };
+  private readonly db: Firestore;
+  private readonly collection;
+  constructor() {
+    this.db = getFirestore();
 
-    const userEntity = new UserEntity(userProps);
-    const userData = JSON.parse(JSON.stringify(userEntity));
-    await getFirestore().collection('users').add(userData);
+    if (!this.db) {
+      throw new Error('Firestore não inicializado');
+    }
+
+    this.collection = this.db.collection('users');
   }
 
-  public async listAllUsers(): Promise<UserEntity[]> {
-    const snapshot = await getFirestore().collection('users').get();
-    const users: UserEntity[] = snapshot.docs.map(
-      doc => doc.data() as UserEntity,
-    );
-    return users;
+  async listEmployeesByCompanyId(id: string): Promise<UserEntity[]> {
+    try {
+      const snapshot = await this.collection.get();
+      return snapshot.docs.map(doc => new UserEntity(doc.data() as UserProps));
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+  }
+
+  public async signUp(user: UserEntity): Promise<void> {
+    const userData = JSON.parse(JSON.stringify(user));
+    await getFirestore().collection('users').add(userData);
   }
 }
